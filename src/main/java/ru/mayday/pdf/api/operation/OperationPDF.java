@@ -1,4 +1,4 @@
-package ru.mayday.pdf.api.test;
+package ru.mayday.pdf.api.operation;
 
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.multipdf.Splitter;
@@ -10,6 +10,7 @@ import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 import org.apache.pdfbox.util.Matrix;
+import org.springframework.stereotype.Repository;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -20,17 +21,19 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class TestOperationsPDF {
+@Repository
+public class OperationPDF {
 
     private static final String pathFile = "C:\\Users\\user\\Desktop\\";
     private static final String nameFileInput = "testPDFfile";
     private static final String pathFileInput = pathFile + nameFileInput + ".pdf";
     private static final String pathFileInput1 = pathFile + "testPDFfile1.pdf";
 
-    public static void main(String args[]) throws IOException {
+/*    public static void main(String args[]) throws IOException {
 
         // removePage(0);
 
@@ -42,7 +45,7 @@ public class TestOperationsPDF {
 
         // pdfToArchiveWithImages();
 
-    }
+    }*/
 
     private static void pdfToArchiveWithImages() throws IOException {
         PDDocument document = PDDocument.load(new File(pathFileInput));
@@ -168,12 +171,12 @@ public class TestOperationsPDF {
         doc2.close();
     }
 
-    private static void rotateFile(int rotateDegree) throws IOException {
-        PDDocument document = PDDocument.load(new File(pathFileInput));
-        PDPage page = document.getDocumentCatalog().getPages().get(0);
+    public static void rotateFile(File pdfFile, Integer numberPageForOperation, Integer degreeForRotate) throws IOException {
+        PDDocument document = PDDocument.load(pdfFile);
+        PDPage page = document.getDocumentCatalog().getPages().get(numberPageForOperation - 1);
         PDPageContentStream cs = new PDPageContentStream(document, page,
                 PDPageContentStream.AppendMode.PREPEND, false, false);
-        Matrix matrix = Matrix.getRotateInstance(Math.toRadians(rotateDegree), 0, 0);
+        Matrix matrix = Matrix.getRotateInstance(Math.toRadians(degreeForRotate), 0, 0);
         cs.transform(matrix);
         cs.close();
 
@@ -185,7 +188,7 @@ public class TestOperationsPDF {
         page.setCropBox(newBox);
         page.setMediaBox(newBox);
 
-        document.save(new File(pathFile + "testRotatePDF.pdf"));
+        document.save(pdfFile);
 
         //Closing the document
         document.close();

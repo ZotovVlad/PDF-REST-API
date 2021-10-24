@@ -1,23 +1,29 @@
 package ru.mayday.pdf.api.service;
 
-import ru.mayday.pdf.api.model.PDF;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.List;
 
 public interface PDFService {
 
-    PDF unionPDFs(List<PDF> pdfFiles);
+    File unionPDFs(List<File> pdfFiles);
 
-    void deletePDF(PDF pdfFile);
+    void deletePDF(File pdfFile);
 
-    List<PDF> splitPDF(PDF pdfFile);
+    List<File> splitPDF(File pdfFile);
 
-    PDF rotatePDF(PDF pdfFile);
+    File rotatePDF(File pdfFile, List<Integer> numberPageForOperation, Integer degreeForRotate);
 
     //todo convert File to archive
-    File archivePDF(PDF pdfFile);
+    File archivePDF(File pdfFile);
 
-    void savePDFs(PDF pdfFile);
+    void savePDFs(File pdfFile);
+
+    List<String> parseInstructionPageRange(String instructionPageRange);
+
+    List<Integer> parseInstructionPageForBindingOperation(List<String> instructionPageForOperation);
+
+    File createFile(MultipartFile pdfFile);
 
 }
