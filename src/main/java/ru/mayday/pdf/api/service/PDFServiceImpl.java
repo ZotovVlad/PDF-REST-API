@@ -1,14 +1,14 @@
 package ru.mayday.pdf.api.service;
 
 
+import org.apache.pdfbox.io.IOUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.mayday.pdf.api.operation.OperationPDF;
 import ru.mayday.pdf.api.repository.PDFRepository;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,18 +23,24 @@ public class PDFServiceImpl implements PDFService {
     }
 
     @Override
-    public File unionPDFs(List<File> pdfFiles) {
-        return null;
+    public File unionPDFs(List<File> pdfFiles) throws IOException {
+        return OperationPDF.unionFile(pdfFiles);
     }
 
     @Override
-    public void deletePDF(File pdfFile) {
-
+    public File removePDF(File pdfFile, List<Integer> instructionPageForOperation) throws IOException {
+        return OperationPDF.removePage(pdfFile, instructionPageForOperation);
     }
 
     @Override
-    public List<File> splitPDF(File pdfFile) {
-        return null;
+    public List<File> splitPDF(File pdfFile, List<String> instructionPageForOperation) throws IOException {
+
+        List<File> files = new ArrayList<>();
+        for (String instructionPage : instructionPageForOperation) {
+            List<Integer> numberPageForOperation = this.parseInstructionPageForBindingOperation(instructionPageForOperation);
+            files.add(OperationPDF.splitFile(pdfFile, numberPageForOperation));
+        }
+        return files;
     }
 
     @Override
@@ -50,13 +56,13 @@ public class PDFServiceImpl implements PDFService {
     }
 
     @Override
-    public File archivePDF(File pdfFile) {
-        return null;
+    public File archivePDF(File pdfFile) throws IOException {
+        return new File(OperationPDF.pdfToArchiveWithImages(pdfFile));
     }
 
     @Override
-    public void savePDFs(File pdfFile) {
-
+    public void savePDF(File pdfFile) {
+        pdfRepository.addPdfFile(pdfFile);
     }
 
     @Override
@@ -98,5 +104,17 @@ public class PDFServiceImpl implements PDFService {
             e.printStackTrace();
         }
         return outputFile;
+    }
+
+    @Override
+    public byte[] fileToByteArray(File pdfFileCustom) throws Exception {
+        byte[] bytes = new byte[(int) pdfFileCustom.length()];
+        // funny, if can use Java 7, please uses Files.readAllBytes(path)
+        try (FileInputStream fis = new FileInputStream(pdfFileCustom)) {
+            fis.read(bytes);
+        }
+        System.out.println(Arrays.toString(bytes));
+        return bytes;
+        //return Files.readAllBytes(pdfFileCustom.toPath());
     }
 }

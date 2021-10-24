@@ -28,28 +28,12 @@ import java.util.zip.ZipOutputStream;
 @Repository
 public class OperationPDF {
 
-    private static final String pathFile = "C:\\Users\\user\\Desktop\\";
-    private static final String nameFileInput = "testPDFfile";
-    private static final String pathFileInput = pathFile + nameFileInput + ".pdf";
-    private static final String pathFileInput1 = pathFile + "testPDFfile1.pdf";
-
-/*    public static void main(String args[]) throws IOException {
-
-        // removePage(0);
-
-        // rotateFile(90);
-
-        // union2File();
-
-        // splitFile(3);
-
-        // pdfToArchiveWithImages();
-
-    }*/
-
-    private static void pdfToArchiveWithImages() throws IOException {
-        PDDocument document = PDDocument.load(new File(pathFileInput));
+    public static String pdfToArchiveWithImages(File filePDF) throws IOException {
+        PDDocument document = PDDocument.load(filePDF);
         PDFRenderer pdfRenderer = new PDFRenderer(document);
+
+        String pathFile = filePDF.getAbsolutePath();
+        String nameFileInput = filePDF.getName();
 
         new File(pathFile + "\\" + nameFileInput).mkdirs();
 
@@ -63,10 +47,11 @@ public class OperationPDF {
         }
         document.close();
 
-        archiveFolder();
+        archiveFolder(pathFile, nameFileInput);
 
         deleteDirectoryRecursion(Paths.get(pathFile + "\\" + nameFileInput));
 
+        return pathFile + "\\" + nameFileInput;
     }
 
     static void deleteDirectoryRecursion(Path path) throws IOException {
@@ -80,7 +65,7 @@ public class OperationPDF {
         Files.delete(path);
     }
 
-    private static void archiveFolder() throws IOException {
+    private static void archiveFolder(String pathFile, String nameFileInput) throws IOException {
         FileOutputStream fos = new FileOutputStream(pathFile + "\\" + nameFileInput +
                 ".zip");
         ZipOutputStream zipOut = new ZipOutputStream(fos);
@@ -121,54 +106,31 @@ public class OperationPDF {
         fis.close();
     }
 
-    private static void splitFile(int splitCount) throws IOException {
-        //Loading an existing PDF document
-        File file = new File(pathFileInput);
-        PDDocument document = PDDocument.load(file);
-
-        //Instantiating Splitter class
+    public static File splitFile(File pdfFile, List<Integer> numberPageForOperation) throws IOException {
+        PDDocument document = PDDocument.load(pdfFile);
         Splitter splitter = new Splitter();
-
-        //splitting the pages of a PDF document
         ArrayList<PDDocument> Pages = (ArrayList<PDDocument>) splitter.split(document);
-
-        //Creating an iterator
         Iterator<PDDocument> iterator = Pages.listIterator();
 
-        //Saving each page as an individual document
-        for (int j = 0; j < splitCount; j++) {
+        for (int j = numberPageForOperation.get(0); j < numberPageForOperation.get(numberPageForOperation.size()); j++) {
             PDDocument pd = iterator.next();
-            pd.save(pathFile + j + ".pdf");
+            pd.save(pdfFile.getAbsoluteFile().toString() + j + ".pdf");
         }
-        System.out.println("Multiple PDF’s created");
         document.close();
+        return new File(pdfFile.getAbsoluteFile().toString() + 0 + ".pdf");
     }
 
-    private static void union2File() throws IOException {
-        //Loading an existing PDF document
-        File file1 = new File(pathFileInput);
-        PDDocument doc1 = PDDocument.load(file1);
-
-        File file2 = new File(pathFileInput1);
-        PDDocument doc2 = PDDocument.load(file2);
-
-        //Instantiating PDFMergerUtility class
+    public static File unionFile(List<File> pdfFiles) throws IOException {
+        String pathFile = pdfFiles.get(0).getAbsolutePath() + "unionPDFs.pdf";
         PDFMergerUtility PDFmerger = new PDFMergerUtility();
-
-        //Setting the destination file
-        PDFmerger.setDestinationFileName(pathFile + "testUnionPDFs.pdf");
-
-        //adding the source files
-        PDFmerger.addSource(file1);
-        PDFmerger.addSource(file2);
-
-        //Merging the two documents
+        PDFmerger.setDestinationFileName(pathFile);
+        for (File pdfFile : pdfFiles) {
+            PDDocument doc = PDDocument.load(pdfFile);
+            PDFmerger.addSource(pdfFile);
+            doc.close();
+        }
         PDFmerger.mergeDocuments();
-
-        System.out.println("Documents merged");
-        //Closing the documents
-        doc1.close();
-        doc2.close();
+        return new File(pathFile);
     }
 
     public static void rotateFile(File pdfFile, Integer numberPageForOperation, Integer degreeForRotate) throws IOException {
@@ -189,31 +151,17 @@ public class OperationPDF {
         page.setMediaBox(newBox);
 
         document.save(pdfFile);
-
-        //Closing the document
         document.close();
     }
 
-    private static void removePage(int numberPage) throws IOException {
-        //Loading an existing document
-        File file = new File(pathFile + "testPDFfile.pdf");
-        PDDocument document = PDDocument.load(file);
-
-        //Listing the number of existing pages
-        int noOfPages = document.getNumberOfPages();
-        System.out.print(noOfPages);
-
-        //Removing the pages
-        document.removePage(numberPage);
-
-        System.out.println("page removed");
-
-        //Saving the document
-        document.save(pathFile + "testRemovePDF.pdf");
-
-        //Closing the document
+    public static File removePage(File pdfFile, List<Integer> instructionPageForOperation) throws IOException {
+        PDDocument document = PDDocument.load(pdfFile);
+        for (Integer instruction : instructionPageForOperation) {
+            document.removePage(instruction - 1);
+        }
+        document.save(pdfFile.getAbsolutePath() + "removePDF.pdf");
         document.close();
+        return pdfFile;
     }
-
 
 }
