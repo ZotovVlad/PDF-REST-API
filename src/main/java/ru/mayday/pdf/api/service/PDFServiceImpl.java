@@ -109,12 +109,9 @@ public class PDFServiceImpl implements PDFService {
     @Override
     public byte[] fileToByteArray(File pdfFileCustom) throws Exception {
         byte[] bytes = new byte[(int) pdfFileCustom.length()];
-        // funny, if can use Java 7, please uses Files.readAllBytes(path)
         try (FileInputStream fis = new FileInputStream(pdfFileCustom)) {
             fis.read(bytes);
         }
-        System.out.println(Arrays.toString(bytes));
         return bytes;
-        //return Files.readAllBytes(pdfFileCustom.toPath());
     }
 }
