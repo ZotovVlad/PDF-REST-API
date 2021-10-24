@@ -108,10 +108,38 @@ public class PDFServiceImpl implements PDFService {
 
     @Override
     public byte[] fileToByteArray(File pdfFileCustom) throws Exception {
-        byte[] bytes = new byte[(int) pdfFileCustom.length()];
-        try (FileInputStream fis = new FileInputStream(pdfFileCustom)) {
-            fis.read(bytes);
+
+        FileInputStream fileInputStream = null;
+        byte[] bFile = new byte[(int) pdfFileCustom.length()];
+        try {
+            fileInputStream = new FileInputStream(pdfFileCustom);
+            fileInputStream.read(bFile);
+            fileInputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return bytes;
+
+        this.createFileByte(bFile);
+
+        return bFile;
+
+        /*byte[] bytes = new byte[(int) pdfFileCustom.length()];
+
+        FileInputStream inputStream = new FileInputStream(pdfFileCustom);
+        inputStream.read(bytes);
+        inputStream.close();
+
+        return bytes;*/
+    }
+
+    private void createFileByte(byte[] bFile) {
+        try {
+            File outputFile = new File(System.getProperty("user.home") + "/Desktop/test.pdf");
+            FileOutputStream outputStream = new FileOutputStream(outputFile);
+            outputStream.write(bFile);
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

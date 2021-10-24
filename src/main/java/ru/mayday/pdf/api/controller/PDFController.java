@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.mayday.pdf.api.service.PDFService;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.File;
@@ -77,7 +78,8 @@ public class PDFController {
     @RequestMapping(value = "/v1/pdfs/remove", method = RequestMethod.POST, consumes = "multipart/form-data")
     public byte[] removePDFFilePage(
             @RequestParam("file") MultipartFile pdfFile,
-            @RequestParam("instructionPageRange") String instructionPageRange) throws Exception {
+            @RequestParam("instructionPageRange") String instructionPageRange,
+            HttpServletResponse response) throws Exception {
 
         List<String> instructionPageForOperation = pdfService.parseInstructionPageRange(instructionPageRange);
         List<Integer> numberPageForOperation = pdfService.parseInstructionPageForBindingOperation(instructionPageForOperation);
@@ -85,6 +87,12 @@ public class PDFController {
         File pdfFileCustom = pdfService.createFile(pdfFile);
         pdfFileCustom = pdfService.removePDF(pdfFileCustom, numberPageForOperation);
         pdfService.savePDF(pdfFileCustom);
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-disposition", "attachment; filename=" + pdfFileCustom.getAbsolutePath()+ pdfFileCustom.getName());
+        response.setContentLength(pdfService.fileToByteArray(pdfFileCustom).length);
+        response.getOutputStream().write(pdfService.fileToByteArray(pdfFileCustom));
+        response.getOutputStream().flush();
 
         return pdfService.fileToByteArray(pdfFileCustom);
     }
